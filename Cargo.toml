@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members  = ["xtask", "xtask-mcp-macros"]
+exclude  = [
+    "esp-alloc",
+    "esp-backtrace",
+    "esp-bootloader-esp-idf",
+    "esp-config",
+    "esp-hal",
+    "esp-hal-procmacros",
+    "esp-rom-sys",
+    "esp-lp-hal",
+    "esp-metadata",
+    "esp-metadata-generated",
+    "esp-phy",
+    "esp-println",
+    "esp-rtos",
+    "esp-radio-rtos-driver",
+    "esp-riscv-rt",
+    "esp-radio",
+    "esp-storage",
+    "esp-sync",
+    "examples",
+    "extras/bench-server",
+    "extras/esp-wifishark",
+    "extras/ieee802154-sniffer",
+    "hil-test",
+    "hil-test-radio",
+    "qa-test",
+    "xtensa-lx",
+    "xtensa-lx-rt",
+    "xtensa-lx-rt-proc-macros",
+
+    "init-local-registry",
+    "compile-tests",
+]

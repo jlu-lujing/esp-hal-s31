@@ -1,0 +1,64 @@
+//% CHIP_FILTER(no_wifi):      bt_driver_supported && !wifi_driver_supported
+//% CHIP_FILTER(no_ble):       wifi_driver_supported && !bt_driver_supported
+//% CHIP_FILTER(no_radio):     !wifi_driver_supported && !bt_driver_supported
+//% CHIP_FILTER(has_wifi_ble): wifi_driver_supported && bt_driver_supported
+//% CHIP_FILTER(stable_wifi):  wifi_driver_supported
+
+//% FEATURES: unstable esp-alloc embassy
+//% FEATURES(no_radio): rtos-radio-driver
+//% FEATURES(no_ble): esp-radio/wifi esp-radio esp-radio-unstable
+//% FEATURES(no_wifi): esp-radio/ble esp-radio esp-radio-unstable trouble-host
+//% FEATURES(has_wifi_ble): esp-radio/wifi esp-radio/ble esp-radio/coex esp-radio-unstable
+//% FEATURES(has_wifi_ble): trouble-host
+//% FEATURES(stable_wifi): esp-radio/wifi esp-radio
+
+// Even if the defaults change, keep this at a low-ish value for
+// the esp_rtos/moving_data_to_second_core test
+//% ENV: ESP_HAL_CONFIG_STACK_GUARD_OFFSET=4
+
+#![no_std]
+#![no_main]
+
+#[cfg(multi_core)]
+use esp_hal::system::Stack;
+use hil_test as _;
+
+extern crate alloc;
+
+fn init_heap() {
+    cfg_select! {
+        esp32h2 => {
+            esp_alloc::heap_allocator!(size: 72 * 1024);
+        }
+        _ => {
+            use esp_hal::ram;
+            esp_alloc::heap_allocator!(#[ram(reclaimed)] size: 64 * 1024);
+            esp_alloc::heap_allocator!(size: 48 * 1024);
+        }
+        _ => {}
+    }
+}
+
+#[cfg(multi_core)]
+static mut APP_CORE_STACK: Stack<8192> = Stack::new();
+
+#[path = "radio_basic/esp_rtos.rs"]
+mod esp_rtos;
+
+#[path = "radio_basic/init_tests.rs"]
+#[cfg(feature = "esp-radio")]
+mod init_tests;
+
+#[cfg(bt_driver_supported)]
+#[path = "radio_basic/ble_controller.rs"]
+#[cfg(feature = "esp-radio-unstable")]
+mod ble_controller;
+
+#[cfg(soc_has_wifi)]
+#[path = "radio_basic/wifi_controller.rs"]
+#[cfg(feature = "esp-radio")]
+mod wifi_controller;
+
+#[cfg(xtensa)]
+#[path = "radio_basic/fpu.rs"]
+mod fpu;

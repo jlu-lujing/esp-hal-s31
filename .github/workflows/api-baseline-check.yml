@@ -1,0 +1,45 @@
+name: API Baseline Check
+
+on:
+  workflow_call:
+    inputs:
+      packages:
+        description: "Space-separated list of packages with breaking changes to exclude"
+        required: false
+        type: string
+        default: ""
+
+env:
+  CARGO_TERM_COLOR: always
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  baseline-check:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # Install the Rust toolchain for Xtensa devices:
+      - uses: esp-rs/xtensa-toolchain@v1.6
+        with:
+          version: 1.96.0.0
+
+      # Install the Rust stable toolchain for RISC-V devices:
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imc-unknown-none-elf,riscv32imac-unknown-none-elf,riscv32imafc-unknown-none-elf
+          toolchain: stable
+          components: rust-src
+
+      - name: Semver-Check
+        run: |
+          cargo xcheck semver-check download-baselines
+          PACKAGES="${{ inputs.packages }}"
+          if [ -n "$PACKAGES" ]; then
+            cargo xcheck semver-check --exclude-packages "$PACKAGES" check
+          else
+            cargo xcheck semver-check check
+          fi

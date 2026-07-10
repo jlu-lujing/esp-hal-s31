@@ -1,0 +1,22 @@
+# IPv4 addresses
+^https?://\d+\.\d+\.\d+\.\d+
+
+# localhost and .local domains
+^https?://localhost
+.*\.local
+
+# Template placeholders
+%7B[^%]+%7D
+\{[^}]+\}
+
+# GitHub compare links (ignore only these)
+^https://github\.com/.*/compare/.*\.\.\..*
+
+# GitHub patterns
+releases/tag/$
+
+# Shield.io badges
+img\.shields\.io/badge/MSRV-
+
+# Ignore httpbin.org as it is often down/throttling in CI
+http://httpbin\.org/

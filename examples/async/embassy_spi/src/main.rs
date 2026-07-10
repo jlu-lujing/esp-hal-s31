@@ -1,0 +1,87 @@
+//! Embassy SPI
+//!
+//! Depending on your target and the board you are using you have to change the
+//! pins.
+//!
+//! Connect MISO and MOSI pins to see the outgoing data is read as incoming
+//! data.
+//!
+//! The following wiring is assumed:
+//! SCLK => GPIO0
+//! MISO => GPIO2
+//! MOSI => GPIO4
+//! CS   => GPIO5
+
+//% CHIP_FILTER: spi_master_supports_dma
+
+#![no_std]
+#![no_main]
+
+use embassy_executor::Spawner;
+use embassy_time::{Duration, Timer};
+use esp_backtrace as _;
+use esp_hal::{
+    dma_rx_buffer,
+    dma_tx_buffer,
+    interrupt::software::SoftwareInterruptControl,
+    spi::{
+        Mode,
+        master::{Config, Spi},
+    },
+    time::Rate,
+    timer::timg::TimerGroup,
+};
+
+esp_bootloader_esp_idf::esp_app_desc!();
+
+#[esp_hal::main]
+async fn main(_spawner: Spawner) {
+    esp_println::println!("Init!");
+
+    esp_println::logger::init_logger_from_env();
+    let peripherals = esp_hal::init(esp_hal::Config::default());
+
+    let sw_int = SoftwareInterruptControl::new(peripherals.SW_INTERRUPT);
+    let timg0 = TimerGroup::new(peripherals.TIMG0);
+    esp_rtos::start(timg0.timer0, sw_int.software_interrupt0);
+
+    let sclk = peripherals.GPIO0;
+    let miso = peripherals.GPIO2;
+    let mosi = peripherals.GPIO4;
+    let cs = peripherals.GPIO5;
+
+    let dma_channel = cfg_select! {
+        any(feature = "esp32", feature = "esp32s2") => peripherals.DMA_SPI2,
+        feature = "esp32p4" => peripherals.DMA_AXI_CH0,
+        _ => peripherals.DMA_CH0,
+    };
+
+    let dma_rx_buf = dma_rx_buffer!(32000).unwrap();
+    let dma_tx_buf = dma_tx_buffer!(32000).unwrap();
+
+    let mut spi = Spi::new(
+        peripherals.SPI2,
+        Config::default()
+            .with_frequency(Rate::from_khz(100))
+            .with_mode(Mode::_0),
+    )
+    .unwrap()
+    .with_sck(sclk)
+    .with_mosi(mosi)
+    .with_miso(miso)
+    .with_cs(cs)
+    .with_dma(dma_channel)
+    .with_buffers(dma_rx_buf, dma_tx_buf)
+    .into_async();
+
+    let send_buffer = [0, 1, 2, 3, 4, 5, 6, 7];
+    loop {
+        let mut buffer = [0; 8];
+        esp_println::println!("Sending bytes");
+        embedded_hal_async::spi::SpiBus::transfer(&mut spi, &mut buffer, &send_buffer)
+            .await
+            .unwrap();
+        esp_println::println!("Bytes received: {:?}", buffer);
+        Timer::after(Duration::from_millis(5_000)).await;
+    }
+}

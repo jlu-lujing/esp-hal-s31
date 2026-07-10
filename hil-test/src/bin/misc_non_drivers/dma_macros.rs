@@ -1,0 +1,117 @@
+#[embedded_test::tests(default_timeout = 3)]
+mod tests {
+    const DATA_SIZE: usize = 1024 * 10;
+
+    pub(crate) const fn compute_size(size: usize, chunk_size: usize) -> usize {
+        size.div_ceil(chunk_size)
+    }
+
+    // defmt::* is load-bearing, it ensures that the assert in dma_buffers! is not
+    // using defmt's non-const assert. Doing so would result in a compile error.
+    #[allow(unused_imports)]
+    use defmt::*;
+
+    #[init]
+    fn init() {
+        // Ensures that watchdogs are disabled
+        let _ = esp_hal::init(Default::default());
+    }
+
+    #[test]
+    fn test_dma_descriptors_same_size() {
+        use esp_hal::dma::CHUNK_SIZE;
+        let (rx_descriptors, tx_descriptors) = esp_hal::dma_descriptors!(DATA_SIZE);
+        core::assert_eq!(rx_descriptors.len(), tx_descriptors.len());
+        core::assert_eq!(rx_descriptors.len(), compute_size(DATA_SIZE, CHUNK_SIZE));
+        core::assert_eq!(tx_descriptors.len(), compute_size(DATA_SIZE, CHUNK_SIZE));
+    }
+
+    #[test]
+    fn test_dma_descriptors_different_size() {
+        use esp_hal::dma::CHUNK_SIZE;
+        const RX_SIZE: usize = DATA_SIZE / 2;
+        const TX_SIZE: usize = DATA_SIZE;
+        let (rx_descriptors, tx_descriptors) = esp_hal::dma_descriptors!(RX_SIZE, TX_SIZE);
+        core::assert_eq!(rx_descriptors.len(), compute_size(RX_SIZE, CHUNK_SIZE));
+        core::assert_eq!(tx_descriptors.len(), compute_size(TX_SIZE, CHUNK_SIZE));
+    }
+
+    #[test]
+    fn test_dma_buffers_same_size() {
+        use esp_hal::dma::CHUNK_SIZE;
+        let (rx_buffer, rx_descriptors, tx_buffer, tx_descriptors) =
+            esp_hal::dma_buffers!(DATA_SIZE);
+        core::assert_eq!(rx_buffer.len(), DATA_SIZE);
+        core::assert_eq!(tx_buffer.len(), DATA_SIZE);
+        core::assert_eq!(tx_descriptors.len(), rx_descriptors.len());
+        core::assert_eq!(rx_descriptors.len(), compute_size(DATA_SIZE, CHUNK_SIZE));
+        core::assert_eq!(tx_descriptors.len(), compute_size(DATA_SIZE, CHUNK_SIZE));
+    }
+
+    #[test]
+    fn test_dma_buffers_different_size() {
+        use esp_hal::dma::CHUNK_SIZE;
+        const RX_SIZE: usize = DATA_SIZE / 2;
+        const TX_SIZE: usize = DATA_SIZE;
+
+        let (rx_buffer, rx_descriptors, tx_buffer, tx_descriptors) =
+            esp_hal::dma_buffers!(RX_SIZE, TX_SIZE);
+        core::assert_eq!(rx_buffer.len(), RX_SIZE);
+        core::assert_eq!(tx_buffer.len(), TX_SIZE);
+        core::assert_eq!(rx_descriptors.len(), compute_size(RX_SIZE, CHUNK_SIZE));
+        core::assert_eq!(tx_descriptors.len(), compute_size(TX_SIZE, CHUNK_SIZE));
+    }
+
+    #[test]
+    fn test_dma_descriptors_chunk_size_same_size() {
+        const CHUNK_SIZE: usize = 2048;
+        let (rx_descriptors, tx_descriptors) =
+            esp_hal::dma_descriptors_chunk_size!(DATA_SIZE, CHUNK_SIZE);
+        core::assert_eq!(rx_descriptors.len(), tx_descriptors.len());
+        core::assert_eq!(rx_descriptors.len(), compute_size(DATA_SIZE, CHUNK_SIZE));
+        core::assert_eq!(tx_descriptors.len(), compute_size(DATA_SIZE, CHUNK_SIZE));
+    }
+
+    #[test]
+    fn test_dma_descriptors_chunk_size_different_size() {
+        const CHUNK_SIZE: usize = 2048;
+        const RX_SIZE: usize = DATA_SIZE / 2;
+        const TX_SIZE: usize = DATA_SIZE;
+        let (rx_descriptors, tx_descriptors) =
+            esp_hal::dma_descriptors_chunk_size!(RX_SIZE, TX_SIZE, CHUNK_SIZE);
+        core::assert_eq!(rx_descriptors.len(), compute_size(RX_SIZE, CHUNK_SIZE));
+        core::assert_eq!(tx_descriptors.len(), compute_size(TX_SIZE, CHUNK_SIZE));
+    }
+
+    #[test]
+    fn test_dma_tx_buffer() {
+        use esp_hal::dma::{DmaBufError, DmaTxBuf};
+        const TX_SIZE: usize = DATA_SIZE;
+
+        fn check(result: Result<DmaTxBuf, DmaBufError>, size: usize) {
+            match result {
+                Ok(tx_buf) => {
+                    core::assert_eq!(tx_buf.len(), size);
+                }
+                Err(err) => {
+                    core::panic!("Failed to create DmaTxBuf: {:?}", err);
+                }
+            }
+        }
+        check(esp_hal::dma_tx_buffer!(TX_SIZE), TX_SIZE);
+        check(esp_hal::dma_tx_buffer!(TX_SIZE + 1), TX_SIZE + 1);
+        check(esp_hal::dma_tx_buffer!(TX_SIZE + 2), TX_SIZE + 2);
+        check(esp_hal::dma_tx_buffer!(TX_SIZE + 3), TX_SIZE + 3);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_dma_macro_can_only_be_called_once() {
+        fn alloc_buffer() -> esp_hal::dma::DmaTxBuf {
+            esp_hal::dma_tx_buffer!(5).unwrap()
+        }
+
+        alloc_buffer();
+        alloc_buffer();
+    }
+}

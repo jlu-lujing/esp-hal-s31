@@ -1,0 +1,11 @@
+[alias]
+xtask    = "run --package esp-devtool --"
+xclean   = "xtask clean"
+xdoc     = "run --package esp-devtool --features=deploy-docs,preview-docs --"
+xfmt     = "xtask fmt-packages"
+qa       = "xtask run example qa-test"
+xcheck   = "run --quiet --package esp-devtool --features=semver-checks --"
+xrelease = "run --package esp-devtool --features=release -- release"
+xrel-check = "run --package esp-devtool --features=rel-check -- rel-check"
+xmcp       = "run --package esp-devtool --features=mcp -- mcp"
+install-xtask = "install --path ./xtask --all-features"
