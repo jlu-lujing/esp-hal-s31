@@ -126,7 +126,7 @@ macro_rules! coeff_tables {
     };
 }
 
-#[cfg(any(esp32c3, esp32c5, esp32c6, esp32h2, esp32s3))]
+#[cfg(any(esp32c3, esp32c5, esp32c6, esp32h2, esp32s3, esp32s31))]
 mod impls {
     use super::*;
 

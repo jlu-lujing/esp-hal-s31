@@ -26,3 +26,4 @@
 pub use esp_rom_sys::rom::*;
 
 pub(crate) mod regi2c;
+#[cfg(not(esp32s31))] // TODO: add regi2c for esp32s31 when PAC registers are available

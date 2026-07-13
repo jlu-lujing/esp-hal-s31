@@ -21,7 +21,7 @@ use procmacros::handler;
 
 pub use self::calibration::*;
 use super::{AdcCalSource, AdcConfig, Attenuation};
-#[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32h2, esp32s31))]
+#[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32h2))]
 use crate::efuse::AdcCalibUnit;
 use crate::{
     Async,
@@ -181,7 +181,7 @@ impl RegisterAccess for crate::peripherals::ADC1<'_> {
     // Currently #[cfg] covers all supported RISC-V devices,
     // but, for example, esp32p4 uses the value 4 instead of 1,
     // so it is not standard across all RISC-V devices.
-    #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32h2, esp32s31))]
+    #[cfg(any(esp32c2, esp32c3, esp32c5, esp32c6, esp32h2))]
     fn calibration_init() {
         // e.g.
         // https://github.com/espressif/esp-idf/blob/800f141f94c0f880c162de476512e183df671307/components/hal/esp32c3/include/hal/adc_ll.h#L702
@@ -271,7 +271,7 @@ impl RegisterAccess for crate::peripherals::ADC2<'_> {
             .modify(|_, w| w.onetime_start().clear_bit());
     }
 
-    #[cfg(any(esp32c2, esp32c3, esp32c6, esp32h2, esp32s31))]
+    #[cfg(any(esp32c2, esp32c3, esp32c6, esp32h2))]
     fn calibration_init() {
         regi2c::ADC_SAR2_DREF.write_field(1);
     }
