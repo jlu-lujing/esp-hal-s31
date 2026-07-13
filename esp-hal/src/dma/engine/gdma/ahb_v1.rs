@@ -14,7 +14,7 @@ impl AhbGdmaTxChannel<'_> {
     }
 
     #[inline(always)]
-    #[cfg(any(esp32c6, esp32h2))]
+    #[cfg(any(esp32c6, esp32h2, esp32s31))]
     pub(super) fn int(&self) -> &pac::dma::out_int_ch::OUT_INT_CH {
         DMA::regs().out_int_ch(self.0.info.channel as usize)
     }
@@ -253,7 +253,7 @@ impl AhbGdmaRxChannel<'_> {
     }
 
     #[inline(always)]
-    #[cfg(any(esp32c6, esp32h2))]
+    #[cfg(any(esp32c6, esp32h2, esp32s31))]
     fn int(&self) -> &pac::dma::in_int_ch::IN_INT_CH {
         DMA::regs().in_int_ch(self.0.info.channel as usize)
     }
