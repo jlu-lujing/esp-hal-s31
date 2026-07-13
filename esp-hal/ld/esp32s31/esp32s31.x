@@ -23,7 +23,7 @@ SECTIONS {
   .text_gap (NOLOAD): {
     . = . + 8;
     . = ALIGN(0x10000) + 0x20;
-  } > RAM
+  } > ROM
 }
 INSERT BEFORE .text;
 
