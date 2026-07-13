@@ -6,6 +6,14 @@ Each device has its own unique set of peripherals, and as such not every example
 
 To check if a device is compatible with a given example, check the features in the `Cargo.toml` file for the example application, which will include a feature for each supported device.
 
+> **Note**: The `peripheral/s31_blinky` example provides an ESP32-S31-specific
+> minimal blinky test program. It can be built once the esp32s31 PAC crate is
+> available in esp-rs/esp-pacs:
+> ```shell
+> cargo build --release --features esp32s31 \
+>     --target riscv32imac-unknown-none-elf
+> ```
+
 For more information regarding the examples, refer to the `README.md` file in any of the subdirectories within the `examples/` directory.
 
 ## Building Examples
