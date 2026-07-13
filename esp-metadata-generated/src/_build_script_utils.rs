@@ -6849,8 +6849,8 @@ impl Chip {
                     "gpio_constant_0_input=\"60\"",
                     "gpio_constant_1_input=\"56\"",
                     "gpio_func_in_sel_offset=\"0\"",
-                    "gpio_input_signal_max=\"6\"",
-                    "gpio_output_signal_max=\"128\"",
+                    "gpio_input_signal_max=\"73\"",
+                    "gpio_output_signal_max=\"73\"",
                     "i2c_master_version=\"3\"",
                     "i2c_master_has_fsm_timeouts",
                     "i2c_master_has_hw_bus_clear",
@@ -7086,8 +7086,8 @@ impl Chip {
                     "cargo:rustc-cfg=gpio_constant_0_input=\"60\"",
                     "cargo:rustc-cfg=gpio_constant_1_input=\"56\"",
                     "cargo:rustc-cfg=gpio_func_in_sel_offset=\"0\"",
-                    "cargo:rustc-cfg=gpio_input_signal_max=\"6\"",
-                    "cargo:rustc-cfg=gpio_output_signal_max=\"128\"",
+                    "cargo:rustc-cfg=gpio_input_signal_max=\"73\"",
+                    "cargo:rustc-cfg=gpio_output_signal_max=\"73\"",
                     "cargo:rustc-cfg=i2c_master_version=\"3\"",
                     "cargo:rustc-cfg=i2c_master_has_fsm_timeouts",
                     "cargo:rustc-cfg=i2c_master_has_hw_bus_clear",
@@ -7200,7 +7200,7 @@ impl Chip {
                     },
                     PinInfo {
                         pin: 2,
-                        limitations: &[],
+                        limitations: &["spi_flash"],
                     },
                     PinInfo {
                         pin: 3,
@@ -7208,11 +7208,11 @@ impl Chip {
                     },
                     PinInfo {
                         pin: 4,
-                        limitations: &["jtag"],
+                        limitations: &[],
                     },
                     PinInfo {
                         pin: 5,
-                        limitations: &["jtag"],
+                        limitations: &["spi_flash"],
                     },
                     PinInfo {
                         pin: 6,
@@ -7224,11 +7224,11 @@ impl Chip {
                     },
                     PinInfo {
                         pin: 8,
-                        limitations: &[],
+                        limitations: &["strapping"],
                     },
                     PinInfo {
                         pin: 9,
-                        limitations: &[],
+                        limitations: &["strapping"],
                     },
                     PinInfo {
                         pin: 10,
@@ -7236,6 +7236,118 @@ impl Chip {
                     },
                     PinInfo {
                         pin: 11,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 12,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 13,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 14,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 15,
+                        limitations: &["strapping"],
+                    },
+                    PinInfo {
+                        pin: 16,
+                        limitations: &["bootloader_uart"],
+                    },
+                    PinInfo {
+                        pin: 17,
+                        limitations: &["bootloader_uart"],
+                    },
+                    PinInfo {
+                        pin: 18,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 19,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 20,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 21,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 22,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 23,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 24,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 25,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 26,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 27,
+                        limitations: &["spi_flash"],
+                    },
+                    PinInfo {
+                        pin: 28,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 29,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 30,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 31,
+                        limitations: &["bootloader_uart"],
+                    },
+                    PinInfo {
+                        pin: 32,
+                        limitations: &["bootloader_uart"],
+                    },
+                    PinInfo {
+                        pin: 33,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 34,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 35,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 36,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 37,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 38,
+                        limitations: &[],
+                    },
+                    PinInfo {
+                        pin: 39,
                         limitations: &[],
                     },
                 ],
@@ -7783,9 +7895,9 @@ pub fn emit_check_cfg_directives() {
     println!("cargo:rustc-check-cfg=cfg(gpio_func_in_sel_offset, values(\"0\",\"1\"))");
     println!(
         "cargo:rustc-check-cfg=cfg(gpio_input_signal_max, \
-         values(\"206\",\"100\",\"116\",\"124\",\"203\",\"242\",\"255\",\"6\"))"
+         values(\"206\",\"100\",\"116\",\"124\",\"203\",\"242\",\"255\",\"73\"))"
     );
-    println!("cargo:rustc-check-cfg=cfg(gpio_output_signal_max, values(\"256\",\"128\"))");
+    println!("cargo:rustc-check-cfg=cfg(gpio_output_signal_max, values(\"256\",\"128\",\"73\"))");
     println!("cargo:rustc-check-cfg=cfg(i2c_master_version, values(\"1\",\"3\",\"2\"))");
     println!(
         "cargo:rustc-check-cfg=cfg(i2c_master_i2c0_data_register_ahb_address, \

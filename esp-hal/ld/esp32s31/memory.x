@@ -31,12 +31,18 @@ MEMORY
 
     /*
      * Instruction and Data ROM (external flash mapped via cache)
-     * NOTE: The actual S31 ROM region is not publicly documented yet.
-     * Using placeholder address range until hardware spec is published.
-     * The 0x20 offset is a convenience for the app binary image generation:
-     * flash cache has 64KB pages, and each segment has an 0x08 byte header.
+     * S31 supports up to 4MB flash. The 0x20 offset is a convenience for the
+     * app binary image generation: flash cache has 64KB pages, and each segment
+     * has an 0x08 byte header.
      */
-    ROM : ORIGIN = 0x38000020, LENGTH = 0x400000 - 0x20
+    ROM : ORIGIN =   0x38000020, LENGTH = 0x400000 - 0x20
+
+    /*
+     * External RAM (PSRAM) — optional. The Wokwi S31 simulator uses a
+     * Function Core board which may or may not have PSRAM. This region is a
+     * placeholder: set ORIGIN/LENGTH to match your actual hardware config.
+     */
+    EXTERNAL_RAM ( RW ) : ORIGIN = 0x4002_0000, LENGTH = 0
 }
 
 REGION_ALIAS("iram_text_seg", RAM);

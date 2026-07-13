@@ -173,4 +173,6 @@ peripheral_clocks = { templates = [
     { name = "Mcpwm1", template_params = { peripheral = "pwm1" } },
     { name = "Mcpwm2", template_params = { peripheral = "pwm2" } },
     { name = "Mcpwm3", template_params = { peripheral = "pwm3" } },
+    { name = "AhbGdmaUart", template_params = { peripheral = "gdma_uart0" } },
+    { name = "I2s0Ext", template_params = { clk_en_field = "i2s0_ext_clk_en" } },
 ] }
