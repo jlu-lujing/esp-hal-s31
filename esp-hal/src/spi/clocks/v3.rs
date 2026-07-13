@@ -22,6 +22,7 @@ impl SpiInstance {
                 esp32c2 => matches!(new_config, SpiFunctionClockConfig::Pll40m),
                 esp32c3 => matches!(new_config, SpiFunctionClockConfig::Pll80m),
                 esp32s3 => matches!(new_config, SpiFunctionClockConfig::Apb),
+                _ => false, // default: mst_clk_sel=0 selects the default source
             };
             w.mst_clk_sel().bit(bit)
         });
