@@ -4,11 +4,9 @@
  */
 
 /*
- * ESP32-S31 has interrupt vector table at 0x40000000 (reset vector)
- * Interrupt IDs start from 0 (like C6, not 1 like C2/C3)
- * Provide default handler for interrupt 0 (if applicable)
+ * ESP32-S31 is a dual-core RISC-V SoC, so we need hart IDs 0 and 1.
  */
-PROVIDE(interrupt0 = DefaultHandler);
+PROVIDE(_max_hart_id = 1);
 
 /* Shared sections - ordering matters */
 SECTIONS {
