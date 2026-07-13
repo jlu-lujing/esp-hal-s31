@@ -209,12 +209,12 @@ impl<'a, 'b> Ext1WakeupSource<'a, 'b> {
 ///
 /// # }
 /// ```
-#[cfg(any(esp32c6, esp32h2))]
+#[cfg(any(esp32c6, esp32h2, esp32s31))]
 pub struct Ext1WakeupSource<'a, 'b> {
     pins: RefCell<&'a mut [(&'b mut dyn RtcIoWakeupPinType, WakeupLevel)]>,
 }
 
-#[cfg(any(esp32c6, esp32h2))]
+#[cfg(any(esp32c6, esp32h2, esp32s31))]
 impl<'a, 'b> Ext1WakeupSource<'a, 'b> {
     /// Creates a new external wake-up source (Ext1) with the specified pins and
     /// wake-up level.
