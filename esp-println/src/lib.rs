@@ -444,6 +444,25 @@ mod uart_printer {
         }
     }
 
+    #[cfg(feature = "esp32s31")]
+    impl Functions for Device {
+        // Unused -- tx_byte() below resolves through the linker.
+        const TX_ONE_CHAR: usize = 0;
+
+        fn tx_byte(b: u8) {
+            unsafe extern "C" {
+                fn esp_rom_uart_tx_one_char(c: u8) -> i32;
+            }
+            unsafe {
+                esp_rom_uart_tx_one_char(b);
+            }
+        }
+
+        fn flush() {
+            // tx_one_char waits for TX FIFO space
+        }
+    }
+
     #[cfg(feature = "esp32c2")]
     impl Functions for Device {
         const TX_ONE_CHAR: usize = 0x4000_005C;

@@ -97,6 +97,12 @@ extern "C" fn rtc_clk_xtal_freq_get() -> i32 {
             // PCR_CLK_XTAL_FREQ updates its value based on EFUSE_XTAL_48M_SEL.
             regs!(PCR).sysclk_conf().read().clk_xtal_freq().bits() as i32
         }
+        esp32s31 => {
+            unsafe extern "C" {
+                fn ets_clk_get_xtal_freq() -> i32;
+            }
+            (unsafe { ets_clk_get_xtal_freq() }) / 1_000_000
+        }
         _ => {
             compile_error!("rtc_clk_xtal_freq_get not implemented for this chip");
         }
