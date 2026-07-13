@@ -20,7 +20,7 @@ use core::cell::RefCell;
 
 #[cfg(any(esp32, esp32s2, esp32s3))]
 use crate::gpio::RtcPin as RtcIoWakeupPinType;
-#[cfg(any(esp32c3, esp32c6, esp32c2, esp32h2))]
+#[cfg(any(esp32c3, esp32c6, esp32c2, esp32h2, esp32s31))]
 use crate::gpio::RtcPinWithResistors as RtcIoWakeupPinType;
 use crate::{peripherals::LPWR, rtc_cntl::Rtc};
 
@@ -33,6 +33,7 @@ use crate::{peripherals::LPWR, rtc_cntl::Rtc};
 #[cfg_attr(esp32c6, path = "esp32c6.rs")]
 #[cfg_attr(esp32c2, path = "esp32c2.rs")]
 #[cfg_attr(esp32h2, path = "esp32h2.rs")]
+#[cfg_attr(esp32s31, path = "esp32c6.rs")]
 #[cfg_attr(esp32p4, path = "esp32p4.rs")]
 mod sleep_impl;
 pub use sleep_impl::*;

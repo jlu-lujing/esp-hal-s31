@@ -2,7 +2,7 @@ use crate::time::Duration;
 
 #[cfg_attr(any(esp32, esp32c2, esp32c3, esp32s2, esp32s3), path = "timer/v1.rs")]
 #[cfg_attr(
-    any(esp32c5, esp32c6, esp32c61, esp32h2, esp32p4),
+    any(esp32c5, esp32c6, esp32c61, esp32h2, esp32p4, esp32s31),
     path = "timer/v2.rs"
 )]
 mod timer;
