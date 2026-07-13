@@ -119,6 +119,7 @@ esp32h2 = { version = "0.19", features = ["critical-section"], optional = true, 
 esp32s2 = { version = "0.31", features = ["critical-section"], optional = true, git = "https://github.com/esp-rs/esp-pacs", rev = "14aa2c8" }
 esp32s3 = { version = "0.35", features = ["critical-section"], optional = true, git = "https://github.com/esp-rs/esp-pacs", rev = "14aa2c8" }
 esp32p4 = { version = "0.2",  features = ["critical-section"], optional = true, git = "https://github.com/esp-rs/esp-pacs", rev = "14aa2c8" }
+esp32s31 = { version = "0.1", features = ["critical-section"], optional = true, git = "https://github.com/esp-rs/esp-pacs", rev = "14aa2c8" }
 
 [target.'cfg(target_arch = "riscv32")'.dependencies]
 riscv            = { version = "0.15.0" }
@@ -166,6 +167,7 @@ rt = [
     "esp32h2?/rt",
     "esp32s2?/rt",
     "esp32s3?/rt",
+    "esp32s31?/rt",
     "critical-section",
 ]
 
@@ -297,6 +299,21 @@ esp32s3 = [
     "esp-rom-sys/esp32s3",
     "esp-sync/esp32s3",
     "esp-metadata-generated/esp32s3",
+]
+## ESP32-S31 (RISC-V, dual-core)
+esp32s31 = [
+    "__bluetooth",
+    "__sdmmc",
+    "__usb_otg",
+    # Uncomment when esp32s31 PAC is available from esp-rs/esp-pacs:
+    # "dep:esp32s31",
+    "esp-riscv-rt/rtc-ram",
+    "procmacros/has-lp-core",
+    "procmacros/rtc-fast",
+    "esp-rom-sys/esp32s31",
+    "esp-sync/esp32s31",
+    "esp-metadata-generated/esp32s31",
+    "dep:embassy-net-driver-02",
 ]
 
 #! ### Logging Feature Flags

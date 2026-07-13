@@ -1,0 +1,22 @@
+[package]
+name    = "s31-blinky"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+esp-backtrace = { path = "../../esp-backtrace", features = ["panic-handler"] }
+esp-hal       = { path = "../../esp-hal", features = ["unstable"] }
+panic-halt    = "1"
+
+[features]
+esp32s31 = [
+    "esp-backtrace/esp32s31",
+    "esp-hal/esp32s31",
+]
+
+[profile.release]
+debug            = true
+debug-assertions = true
+lto              = "fat"
+codegen-units    = 1

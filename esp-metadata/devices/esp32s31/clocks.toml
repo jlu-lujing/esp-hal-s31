@@ -1,0 +1,176 @@
+system_clocks = { clock_tree = [
+    # High-speed clock sources
+    { name = "XTAL_CLK",    type = "source",  values = "40",     output = "VALUE * 1_000_000", always_on = true },
+    { name = "PLL_CLK",     type = "derived", from = "XTAL_CLK", output = "320_000_000" },
+    { name = "RC_FAST_CLK", type = "source",                     output = "19_200_000" },
+
+    # Low-speed clocks
+    { name = "XTAL32K_CLK",     type = "source",  output = "32768" },
+    { name = "OSC_SLOW_CLK",    type = "source",  output = "32768" },
+    { name = "RC_SLOW_CLK",     type = "source",  output = "136_000" },
+
+    { name = "SOC_ROOT_CLK", type = "mux", variants = [
+        { name = "XTAL",    outputs = "XTAL_CLK",    configures = ["HP_ROOT_CLK = 1", "CPU_CLK = LS", "AHB_CLK = LS", "MSPI_FAST_CLK = LS"] },
+        { name = "RC_FAST", outputs = "RC_FAST_CLK", configures = ["HP_ROOT_CLK = 1", "CPU_CLK = LS", "AHB_CLK = LS", "MSPI_FAST_CLK = LS"] },
+        { name = "PLL",     outputs = "PLL_CLK",     configures = ["HP_ROOT_CLK = 3", "CPU_CLK = HS", "AHB_CLK = HS", "MSPI_FAST_CLK = HS"] },
+    ] },
+    { name = "HP_ROOT_CLK", type = "generic", params = { divisor = "1, 3" }, output = "SOC_ROOT_CLK / divisor" },
+
+    # Clock dividers for CPU and AHB buses
+    { name = "CPU_HS_DIV", type = "generic", params = { divisor = "0, 1, 3" }, output = "HP_ROOT_CLK / (divisor + 1)" },
+    { name = "CPU_LS_DIV", type = "generic", params = { divisor = "0, 1, 3, 7, 15, 31" }, output = "HP_ROOT_CLK / (divisor + 1)" },
+    { name = "CPU_CLK",    type = "mux", always_on = true, variants = [
+        { name = "HS", outputs = "CPU_HS_DIV" },
+        { name = "LS", outputs = "CPU_LS_DIV" },
+    ] },
+
+    { name = "AHB_HS_DIV", type = "generic", params = { divisor = "3, 7, 15" }, output = "HP_ROOT_CLK / (divisor + 1)" },
+    { name = "AHB_LS_DIV", type = "generic", params = { divisor = "0, 1, 3, 7, 15, 31" }, output = "HP_ROOT_CLK / (divisor + 1)" },
+    { name = "AHB_CLK",    type = "mux", always_on = true, variants = [
+        { name = "HS", outputs = "AHB_HS_DIV" },
+        { name = "LS", outputs = "AHB_LS_DIV" },
+    ] },
+    { name = "APB_CLK", type = "generic", params = { divisor = "0, 1, 3" }, output = "AHB_CLK / (divisor + 1)" },
+
+    # MSPI clock sources
+    { name = "MSPI_FAST_HS_CLK", type = "generic", params = { divisor = "3, 4, 5" }, output = "HP_ROOT_CLK / (divisor + 1)" },
+    { name = "MSPI_FAST_LS_CLK", type = "generic", params = { divisor = "0, 1, 2" }, output = "HP_ROOT_CLK / (divisor + 1)" },
+    { name = "MSPI_FAST_CLK",    type = "mux", variants = [
+        { name = "HS", outputs = "MSPI_FAST_HS_CLK" },
+        { name = "LS", outputs = "MSPI_FAST_LS_CLK" },
+    ] },
+
+    # PLL derived clocks
+    { name = "PLL_F80M",  type = "derived", from = "PLL_CLK", output = "80_000_000"  },
+    { name = "PLL_F160M", type = "derived", from = "PLL_CLK", output = "160_000_000" },
+    { name = "PLL_F240M", type = "derived", from = "PLL_CLK", output = "240_000_000" },
+
+    # LEDC source clock
+    { name = "LEDC_SCLK", type = "mux", variants = [
+        { name = "PLL_F80M",    outputs = "PLL_F80M" },
+        { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+        { name = "XTAL_CLK",    outputs = "XTAL_CLK" },
+    ] },
+
+    # LP clocks
+    { name = "LP_FAST_CLK", type = "mux", variants = [
+        { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+    ] },
+    { name = "LP_SLOW_CLK", type = "mux", variants = [
+        { name = "XTAL32K",  outputs = "XTAL32K_CLK" },
+        { name = "RC_SLOW",  outputs = "RC_SLOW_CLK" },
+        { name = "OSC_SLOW", outputs = "OSC_SLOW_CLK" },
+    ] },
+
+    # TIMG calibration clock
+    { name = "TIMG_CALIBRATION_CLOCK", type = "mux", wake_locking = true, variants = [
+        { name = "RC_SLOW_CLK",     outputs = "LP_SLOW_CLK" },
+        { name = "RC_FAST_DIV_CLK", outputs = "RC_FAST_CLK" },
+        { name = "XTAL32K_CLK",     outputs = "XTAL32K_CLK" },
+    ] },
+], template_groups = [
+    { group = "UART", clocks = [
+        { name = "FUNCTION_CLOCK", type = "generic", wake_locking = true, output = "sclk / (div_num + 1)", params = { sclk = [
+            { name = "PLL_F80M", outputs = "PLL_F80M" },
+            { name = "RC_FAST",  outputs = "RC_FAST_CLK" },
+            { name = "XTAL",     outputs = "XTAL_CLK", default = true },
+        ], div_num = "0 .. 0x100" } },
+        { name = "BAUD_RATE_GENERATOR", type = "generic", output = "(FUNCTION_CLOCK * 16) / (integral * 16 + fractional)", params = { fractional = "0..16", integral = "0..0x1000" } },
+    ] },
+    { group = "RMT", clocks = [
+        { name = "SCLK", type = "mux", wake_locking = true, variants = [
+            { name = "PLL_F80M",    outputs = "PLL_F80M", default = true },
+            { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+            { name = "XTAL_CLK",    outputs = "XTAL_CLK" },
+        ] },
+    ] },
+    { group = "TIMG", clocks = [
+        { name = "FUNCTION_CLOCK", type = "mux", variants = [
+            { name = "XTAL_CLK",    outputs = "XTAL_CLK", default = true },
+            { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+            { name = "PLL_F80M",    outputs = "PLL_F80M" },
+        ] },
+        { name = "WDT_CLOCK", type = "mux", variants = [
+            { name = "XTAL_CLK",    outputs = "XTAL_CLK", default = true },
+            { name = "PLL_F80M",    outputs = "PLL_F80M" },
+            { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+        ] },
+    ] },
+    { group = "MCPWM", clocks = [
+        { name = "FUNCTION_CLOCK", type = "mux", wake_locking = true, variants = [
+            { name = "PLL_F160M",   outputs = "PLL_F160M", default = true },
+            { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+            { name = "XTAL_CLK",    outputs = "XTAL_CLK" },
+        ] },
+    ] },
+    { group = "PARL_IO", clocks = [
+        { name = "RX_CLOCK", type = "mux", wake_locking = true, variants = [
+            { name = "XTAL_CLK",    outputs = "XTAL_CLK" },
+            { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+            { name = "PLL_F240M",   outputs = "PLL_F240M", default = true },
+        ] },
+        { name = "TX_CLOCK", type = "mux", wake_locking = true, variants = [
+            { name = "XTAL_CLK",    outputs = "XTAL_CLK" },
+            { name = "RC_FAST_CLK", outputs = "RC_FAST_CLK" },
+            { name = "PLL_F240M",   outputs = "PLL_F240M", default = true },
+        ] },
+    ] },
+    { group = "I2C", clocks = [
+        { name = "FUNCTION_CLOCK", type = "generic", wake_locking = true, output = "sclk / (div_num + 1)", params = { sclk = [
+            { name = "XTAL",    outputs = "XTAL_CLK", default = true },
+            { name = "RC_FAST", outputs = "RC_FAST_CLK" },
+        ], div_num = "0 .. 0x100" } },
+    ] },
+    { group = "SPI", clocks = [
+        { name = "FUNCTION_CLOCK", type = "mux", wake_locking = true, variants = [
+            { name = "PLL_F80M", outputs = "PLL_F80M" },
+            { name = "XTAL",     outputs = "XTAL_CLK", default = true },
+            { name = "RC_FAST",  outputs = "RC_FAST_CLK" },
+        ] },
+    ] },
+] }
+
+peripheral_clocks = { templates = [
+    { name = "default_clk_en_template", value = "{{control}}::regs().{{conf_register}}().modify(|_, w| w.{{clk_en_field}}().bit(enable));" },
+    { name = "clk_en_template", value = "{{default_clk_en_template}}" },
+    { name = "rst_template", value = "{{control}}::regs().{{conf_register}}().modify(|_, w| w.{{rst_field}}().bit(reset));" },
+    { name = "control", value = "crate::peripherals::SYSTEM" },
+    { name = "conf_register", value = "{{peripheral}}_conf" },
+    { name = "clk_en_field", value = "{{peripheral}}_clk_en" },
+    { name = "rst_field", value = "{{peripheral}}_rst_en" },
+], peripheral_clocks = [
+    # HP Peripherals
+    { name = "Uart0", template_params = { conf_register = "uart(0).conf", clk_en_field = "clk_en", rst_field = "rst_en" }, keep_enabled = true },
+    { name = "Uart1", template_params = { conf_register = "uart(1).conf", clk_en_field = "clk_en", rst_field = "rst_en" } },
+    { name = "Uart2", template_params = { conf_register = "uart(2).conf", clk_en_field = "clk_en", rst_field = "rst_en" } },
+    { name = "Uart3", template_params = { conf_register = "uart(3).conf", clk_en_field = "clk_en", rst_field = "rst_en" } },
+    { name = "I2c0" },
+    { name = "I2c1" },
+    { name = "Uhci0" },
+    { name = "Rmt" },
+    { name = "Ledc0" },
+    { name = "Ledc1" },
+    { name = "Timg0", template_params = { conf_register = "timergroup(0).conf", clk_en_field = "clk_en", rst_field = "rst_en" }, keep_enabled = true },
+    { name = "Timg1", template_params = { conf_register = "timergroup(1).conf", clk_en_field = "clk_en", rst_field = "rst_en" } },
+    { name = "Systimer", keep_enabled = true },
+    { name = "Twai0" },
+    { name = "Twai1" },
+    { name = "I2s0" },
+    { name = "I2s1" },
+    { name = "ParlIo" },
+    { name = "AhbGdma", template_params = { peripheral = "gdma" } },
+    { name = "Spi2" },
+    { name = "Spi3" },
+    { name = "Aes" },
+    { name = "Sha" },
+    { name = "Rsa" },
+    { name = "Ecc" },
+    { name = "Ds" },
+    { name = "Hmac" },
+    { name = "Trace0", template_params = { peripheral = "trace" } },
+    { name = "Pcnt" },
+    { name = "Mcpwm0", template_params = { peripheral = "pwm0" } },
+    { name = "Mcpwm1", template_params = { peripheral = "pwm1" } },
+    { name = "Mcpwm2", template_params = { peripheral = "pwm2" } },
+    { name = "Mcpwm3", template_params = { peripheral = "pwm3" } },
+] }

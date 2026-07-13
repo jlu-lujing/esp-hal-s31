@@ -1,0 +1,338 @@
+# ESP32-S31 Device Metadata (RISC-V, dual-core)
+# Based on ESP-IDF master branch SOC caps for esp32s31
+# Structure matches esp32c6 soc.toml to satisfy metadata parser
+
+[device]
+name   = "esp32s31"
+arch   = "riscv"
+target = "riscv32imac-unknown-none-elf"
+cores  = 2
+trm    = ""
+
+symbols = [
+    "swd",
+    "rom_crc_le",
+    "rom_crc_be",
+    "rom_md5_bsd",
+    "pm_support_ext1_wakeup",
+    "pm_support_wifi_wakeup",
+    "pm_support_bt_wakeup",
+]
+
+[device.soc]
+cpu_has_csr_pc = true
+cpu_csr_prv_mode = 0xC10
+
+memory_map = { ranges = [
+    { name = "dram", start = 0x2F00_0000, end = 0x2F0A_0000 },
+] }
+
+peripherals = [
+    { name = "AES" },
+    { name = "ASSIST_DEBUG" },
+    { name = "DMA" },
+    { name = "DS" },
+    { name = "EFUSE", hidden = true },
+    { name = "EXTMEM" },
+    { name = "GPIO" },
+    { name = "GPIO_SD" },
+    { name = "HMAC" },
+    { name = "I2C0" },
+    { name = "I2C1" },
+    { name = "I2S0" },
+    { name = "INTERRUPT_CORE0" },
+    { name = "INTERRUPT_CORE1" },
+    { name = "IO_MUX" },
+    { name = "LCD_CAM" },
+    { name = "LEDC0" },
+    { name = "MODEM_LPCON" },
+    { name = "MODEM_SYSCON" },
+    { name = "PARL_IO" },
+    { name = "PAU" },
+    { name = "RMT" },
+    { name = "RNG" },
+    { name = "RSA" },
+    { name = "SHA" },
+    { name = "SDMMC", pac = "SDIO_HOST" },
+    { name = "SPI0" },
+    { name = "SPI1" },
+    { name = "SPI2" },
+    { name = "SYSTEM" },
+    { name = "SYSTIMER" },
+    { name = "TIMG0" },
+    { name = "TIMG1" },
+    { name = "TRACE0" },
+    { name = "TWAI0" },
+    { name = "UART0" },
+    { name = "UART1" },
+    { name = "UHCI0" },
+    { name = "USB_SERIAL_JTAG" },
+
+    # LP peripherals
+    { name = "LP_CLKRST" },
+    { name = "LP_I2C" },
+    { name = "LP_UART" },
+    { name = "RTC_CNTL" },
+
+    # Virtual
+    { name = "BT", virtual = true },
+    { name = "GPIO_DEDICATED", virtual = true },
+    { name = "IEEE802154", virtual = true },
+    { name = "LP_CORE", virtual = true },
+    { name = "SW_INTERRUPT", virtual = true },
+    { name = "WIFI", virtual = true },
+]
+
+[device.soc.clocks]
+# {include clocks.toml}
+
+# [device.adc] - removed, not yet in peripheral list
+
+[device.aes]
+support_status = "partial"
+has_split_text_registers = true
+endianness_configurable = false
+dma_mode = ["ECB", "CBC", "OFB", "CTR"]
+key_length = { options = [
+    { bits = 128, encrypt_mode = 0, decrypt_mode = 4 },
+    { bits = 256, encrypt_mode = 2, decrypt_mode = 6 }
+] }
+
+[device.assist_debug]
+support_status = "partial"
+has_sp_monitor = true
+has_region_monitor = true
+
+[device.dedicated_gpio]
+version = "riscv_v1"
+support_status = "partial"
+channels = [["CPU_GPIO_0", "CPU_GPIO_1", "CPU_GPIO_2", "CPU_GPIO_3"]]
+
+[device.dma]
+support_status = "partial"
+gdma_version = 1
+separate_in_out_interrupts = true
+mem2mem_requires_peripheral = true
+ext_mem_configurable_block_size = true
+engines = [
+    {
+        name = "AHB_GDMA",
+        max_priority = 5,
+        internal_ram_burst_sizes = [0, 4],
+        drivers = ["aes", "sha", "spi_master"],
+        peripheral_instances = [
+            { name = "SPI2", dma_id = 0 },
+            { name = "AES",  dma_id = 1 },
+            { name = "SHA",  dma_id = 2 },
+        ],
+        channels = [
+            { name = "DMA_CH0", mem2mem = true, interrupt_in = "DMA_IN_CH0", interrupt_out = "DMA_OUT_CH0" },
+            { name = "DMA_CH1", mem2mem = true, interrupt_in = "DMA_IN_CH1", interrupt_out = "DMA_OUT_CH1" },
+        ]
+    }
+]
+
+[device.ecc]
+support_status = "partial"
+working_modes = [
+    { id = 0, mode = "affine_point_multiplication" },
+    { id = 4, mode = "jacobian_point_multiplication" },
+]
+curves = [
+    { id = 0, curve = 256 }
+]
+zero_extend_writes = true
+
+[device.gpio]
+version = 2
+has_input_sync = true
+support_status = "supported"
+gpio_function = 1
+constant_0_input = 0x3c
+constant_1_input = 0x38
+pins = [
+    { pin = 0 }, { pin = 1 }, { pin = 2 }, { pin = 3 },
+    { pin = 4, functions = { 0 = "MTMS" } },
+    { pin = 5, functions = { 0 = "MTDI" } },
+    { pin = 6, functions = { 0 = "MTCK" } },
+    { pin = 7, functions = { 0 = "MTDO" } },
+    { pin = 8 }, { pin = 9 }, { pin = 10 }, { pin = 11 },
+]
+input_signals = [
+    { name = "U0RXD", id = 6 },
+    { name = "MTMS" }, { name = "MTDI" }, { name = "MTCK" }, { name = "MTDO" },
+]
+output_signals = [
+    { name = "LEDC_LS_SIG0",        id = 0 },
+    { name = "U0TXD",               id = 6 },
+    { name = "FSPICLK",             id = 63 },
+    { name = "FSPIQ",               id = 64 },
+    { name = "FSPID",               id = 65 },
+    { name = "FSPICS0",             id = 68 },
+    { name = "GPIO",                id = 128 },
+]
+
+[device.interrupts]
+support_status = "partial"
+status_registers = 3
+software_interrupt_count = 4
+controller = { Riscv = { flavour = "plic", interrupts = 32, priority_levels = 15 } }
+
+[device.i2c_master]
+support_status = "supported"
+version = 3
+has_fsm_timeouts = true
+has_hw_bus_clear = true
+ll_intr_mask = 0x3ffff
+has_bus_timeout_enable = true
+separate_filter_config_registers = true
+fifo_size = 32
+instances = [
+    { name = "i2c0", sys_instance = "I2c0", scl = "SCL0", sda = "SDA0" },
+    { name = "i2c1", sys_instance = "I2c1", scl = "SCL1", sda = "SDA1" },
+]
+can_estimate_nack_reason = true
+has_conf_update = true
+has_reliable_fsm_reset = true
+has_arbitration_en = true
+has_tx_fifo_watermark = true
+bus_timeout_is_exponential = true
+max_bus_timeout = 0x1F
+
+[device.i2c_slave]
+support_status = "supported"
+instances = [
+    { name = "i2c0" },
+]
+
+[device.ledc]
+version = 3
+channel_count = 6
+
+[device.lp_i2c_master]
+support_status = "partial"
+fifo_size = 16
+
+[device.rmt]
+support_status = "partial"
+ram_start = 0x20355800
+channel_ram_size = 48
+channels = ["Tx", "Tx"]
+has_tx_immediate_stop = true
+has_tx_loop_count = true
+has_tx_loop_auto_stop = true
+
+[device.rsa]
+version = 3
+support_status = "partial"
+size_increment = 32
+memory_size_bytes = 384
+
+[device.sha]
+support_status = "partial"
+algo = { sha1 = 0, sha224 = 1, sha256 = 2 }
+
+[device.sdm]
+support_status = { status = "not_supported", issue = 2370 }
+
+[device.spi_master]
+version = 3
+fifo_size = 64
+support_status = "supported"
+has_app_interrupts = true
+has_dma_segmented_transfer = true
+instances = [
+    { name = "spi2", sys_instance = "Spi2", sclk = "FSPICLK", sio = ["FSPID"], cs = ["FSPICS0"] },
+]
+
+[device.spi_slave]
+support_status = "partial"
+instances = [
+    { name = "spi2", sys_instance = "Spi2", sclk = "FSPICLK", mosi = "FSPID", miso = "FSPID", cs = "FSPICS0" },
+]
+
+[device.timergroup]
+support_status = "partial"
+instances = [{ name = "timg0" }, { name = "timg1" }]
+
+[device.uart]
+support_status = "supported"
+instances = [
+    { name = "uart0", sys_instance = "Uart0", tx = "U0TXD", rx = "U0RXD", cts = "U0CTS", rts = "U0RTS" },
+    { name = "uart1", sys_instance = "Uart1", tx = "U1TXD", rx = "U1RXD", cts = "U1CTS", rts = "U1RTS" },
+]
+ram_size = 128
+version = 2
+peripheral_controls_mem_clk = true
+
+[device.uhci]
+support_status = "partial"
+
+[device.lp_uart]
+support_status = "partial"
+ram_size = 32
+
+[device.ds]
+support_status = { status = "not_supported", issue = 884 }
+
+[device.rng]
+support_status = "partial"
+trng_supported = true
+apb_cycle_wait_num = 16
+is_lp_sys = true
+
+[device.sleep]
+support_status = "partial"
+light_sleep = true
+deep_sleep = true
+
+[device.parl_io]
+support_status = "partial"
+version = 1
+
+[device.touch]
+support_status = "partial"
+
+# Other partially supported drivers:
+[device.hmac]
+
+[device.i2s]
+version = 2
+default_clock_source = 2
+mclk_divider_bit_width = 9
+max_ws_width = 128
+supports_pdm_tx = true
+supports_pdm_rx = true
+
+[device.mcpwm]
+
+[device.pcnt]
+support_status = "partial"
+
+[device.sd_slave]
+support_status = "not_supported"
+
+[device.twai]
+
+[device.usb_serial_jtag]
+
+[device.etm]
+
+[device.io_mux]
+
+[device.temp_sensor]
+
+[device.systimer]
+
+[device.ulp_riscv]
+
+[device.lp_timer]
+
+[device.bt]
+support_status = "partial"
+controller = "npl"
+
+[device.ieee802154]
+
+[device.phy]
+combo_module = true

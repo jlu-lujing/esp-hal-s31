@@ -150,10 +150,12 @@ pub enum Chip {
     Esp32h2,
     /// ESP32-P4 (chip revision v3.x / eco5 only)
     Esp32p4,
-    /// ESP32-S2
+      /// ESP32-S2
     Esp32s2,
     /// ESP32-S3
     Esp32s3,
+    /// ESP32-S31
+    Esp32s31,
 }
 
 impl Chip {
@@ -190,13 +192,14 @@ impl Chip {
     pub fn has_lp_core(&self) -> bool {
         use Chip::*;
         // TODO this should be checking for lp_core_driver_supported
-        matches!(self, Esp32c6 | Esp32s2 | Esp32s3)
+                      matches!(self, Esp32c6 | Esp32s3)
     }
 
     pub fn lp_target(&self) -> Result<&'static str> {
-        match self {
-            Chip::Esp32c5 | Chip::Esp32c6 => Ok("riscv32imac-unknown-none-elf"),
+         match self {
+            Chip::Esp32c6 | Chip::Esp32p4 => Ok("riscv32imac-unknown-none-elf"),
             Chip::Esp32s2 | Chip::Esp32s3 => Ok("riscv32imc-unknown-none-elf"),
+            Chip::Esp32h2 | Chip::Esp32s31 => Ok("riscv32imac-unknown-none-elf"),
             _ => bail!("Chip does not contain an LP core: '{self}'"),
         }
     }
@@ -210,9 +213,10 @@ impl Chip {
             Chip::Esp32c6 => "Esp32c6",
             Chip::Esp32c61 => "Esp32c61",
             Chip::Esp32h2 => "Esp32h2",
-            Chip::Esp32p4 => "Esp32p4",
+             Chip::Esp32p4 => "Esp32p4",
             Chip::Esp32s2 => "Esp32s2",
             Chip::Esp32s3 => "Esp32s3",
+            Chip::Esp32s31 => "Esp32s31",
         }
     }
 
@@ -225,14 +229,15 @@ impl Chip {
             Chip::Esp32c6 => "ESP32-C6",
             Chip::Esp32c61 => "ESP32-C61",
             Chip::Esp32h2 => "ESP32-H2",
-            Chip::Esp32p4 => "ESP32-P4",
+             Chip::Esp32p4 => "ESP32-P4",
             Chip::Esp32s2 => "ESP32-S2",
             Chip::Esp32s3 => "ESP32-S3",
+            Chip::Esp32s31 => "ESP32-S31",
         }
     }
 
     pub fn is_xtensa(&self) -> bool {
-        matches!(self, Chip::Esp32 | Chip::Esp32s2 | Chip::Esp32s3)
+        matches!(self,  Chip::Esp32 | Chip::Esp32s2 | Chip::Esp32s3)
     }
 
     pub fn is_riscv(&self) -> bool {
@@ -390,6 +395,7 @@ impl Config {
             Chip::Esp32p4 => cached_device_config!("devices/esp32p4/soc.toml"),
             Chip::Esp32s2 => cached_device_config!("devices/esp32s2/soc.toml"),
             Chip::Esp32s3 => cached_device_config!("devices/esp32s3/soc.toml"),
+            Chip::Esp32s31 => cached_device_config!("devices/esp32s31/soc.toml"),
         }
     }
 
